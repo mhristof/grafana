@@ -3,6 +3,7 @@ import { debounce } from 'lodash';
 import React, { useCallback } from 'react';
 
 import { GrafanaTheme2, VariableRefresh } from '@grafana/data';
+import { TimeRangeUpdatedEvent } from '@grafana/runtime';
 import {
   PanelBuilders,
   QueryVariable,
@@ -22,13 +23,15 @@ import {
 import { VariableHide } from '@grafana/schema';
 import { Input, InlineSwitch, Field, Alert, Icon, useStyles2 } from '@grafana/ui';
 
-import { getPreviewPanelFor } from './AutomaticMetricQueries/previewPanel';
 import { MetricScene } from './MetricScene';
-import { SelectMetricAction } from './SelectMetricAction';
+import { MetricSearchTermsVariable } from './MetricSelect/MetricSearchTermsVariable';
+import { SelectMetricAction } from './MetricSelect/SelectMetricAction';
+import { getPreviewPanelFor } from './MetricSelect/previewPanel';
+import { sortRelatedMetrics } from './MetricSelect/relatedMetrics';
+import { createSearchRegExp, deriveSearchTermsFromInput } from './MetricSelect/util';
 import { StatusWrapper } from './StatusWrapper';
 import { getMetricDescription } from './helpers/MetricDatasourceHelper';
 import { reportExploreMetrics } from './interactions';
-import { sortRelatedMetrics } from './relatedMetrics';
 import {
   getVariablesWithMetricConstant,
   MetricSelectedEvent,
@@ -36,6 +39,7 @@ import {
   VAR_DATASOURCE,
   VAR_FILTERS_EXPR,
   VAR_METRIC_NAMES,
+  VAR_METRIC_SEARCH_TERMS,
 } from './shared';
 import { getFilters, getTrailFor } from './utils';
 
@@ -81,11 +85,16 @@ export class MetricSelectScene extends SceneObjectBase<MetricSelectSceneState> {
   }
 
   protected _variableDependency = new VariableDependencyConfig(this, {
-    variableNames: [VAR_METRIC_NAMES, VAR_DATASOURCE],
+    variableNames: [VAR_METRIC_NAMES, VAR_DATASOURCE, VAR_METRIC_SEARCH_TERMS],
     onReferencedVariableValueChanged: (variable: SceneVariable) => {
       const { name } = variable.state;
 
       if (name === VAR_DATASOURCE) {
+      } else if (variable instanceof MetricSearchTermsVariable) {
+        const searchQuery = variable.state.terms.join(' ');
+        if (searchQuery !== this.state.searchQuery) {
+          this.setState({ searchQuery });
+        }
         // Clear all panels for the previous data source
         this.state.body.setState({ children: [] });
       } else if (name === VAR_METRIC_NAMES) {
@@ -121,6 +130,12 @@ export class MetricSelectScene extends SceneObjectBase<MetricSelectSceneState> {
         });
       }
     });
+
+    this._subs.add(
+      trail.subscribeToEvent(TimeRangeUpdatedEvent, (evt) => {
+        console.log('WE CHANGED THE TIME', evt.payload.raw);
+      })
+    );
 
     return () => {
       metricChangeSubscription.unsubscribe();
@@ -313,6 +328,13 @@ export class MetricSelectScene extends SceneObjectBase<MetricSelectSceneState> {
   };
 
   private searchQueryChangedDebounced = debounce(() => {
+    // Update the variable
+    const searchTermsVariable = sceneGraph.lookupVariable(VAR_METRIC_SEARCH_TERMS, this);
+    if (searchTermsVariable instanceof MetricSearchTermsVariable) {
+      const terms = deriveSearchTermsFromInput(this.state.searchQuery || '');
+      searchTermsVariable.updateTerms(terms);
+    }
+
     this.updateMetrics(); // Need to repeat entire pipeline
     this.buildLayout();
   }, 500);
@@ -348,9 +370,9 @@ export class MetricSelectScene extends SceneObjectBase<MetricSelectSceneState> {
             <Input
               placeholder="Search metrics"
               prefix={<Icon name={'search'} />}
-              value={searchQuery}
+              value={searchQuery || ''}
               onChange={model.onSearchQueryChange}
-              disabled={disableSearch}
+              // disabled={disableSearch}
             />
           </Field>
           <InlineSwitch
@@ -380,6 +402,7 @@ function getMetricNamesVariableSet() {
     variables: [
       new QueryVariable({
         name: VAR_METRIC_NAMES,
+        // query: { query: `label_values(${VAR_METRIC_NAME_SEARCH_FILTERS_EXPR},__name__)?limit=10`, refId: 'A' },
         datasource: trailDS,
         hide: VariableHide.hideVariable,
         includeAll: true,
@@ -425,29 +448,6 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-// Consider any sequence of characters not permitted for metric names as a sepratator
-const splitSeparator = /[^a-z0-9_:]+/;
-
-function createSearchRegExp(spaceSeparatedMetricNames?: string) {
-  if (!spaceSeparatedMetricNames) {
-    return null;
-  }
-  const searchParts = spaceSeparatedMetricNames
-    ?.toLowerCase()
-    .split(splitSeparator)
-    .filter((part) => part.length > 0)
-    .map((part) => `(?=(.*${part}.*))`);
-
-  if (searchParts.length === 0) {
-    return null;
-  }
-
-  const regex = searchParts.join('');
-  //  (?=(.*expr1.*))(?=().*expr2.*))...
-  // The ?=(...) lookahead allows us to match these in any order.
-  return new RegExp(regex, 'igy');
-}
-
 function useVariableStatus(name: string, sceneObject: SceneObject) {
   const variable = sceneGraph.lookupVariable(name, sceneObject);
 
@@ -462,3 +462,20 @@ function useVariableStatus(name: string, sceneObject: SceneObject) {
 
   return { isLoading: !!loading, error };
 }
+
+/*
+
+
+Notes:
+
+    const labelValuesRegex = /^label_values\((?:(.+),\s*)?([a-zA-Z_][a-zA-Z0-9_]*)\)\s*(?:\?limit=([1-9][0-9]*))?\s*$/;
+
+    const params = { ...(metric && { 'match[]': metric }), start: start.toString(), end: end.toString(), ...(limit && {limit})};
+
+
+        const start = getPrometheusTime(this.range.from, false);
+    const end = getPrometheusTime(this.range.to, true);
+    const params = { ...(metric && { 'match[]': metric }), start: start.toString(), end: end.toString() };
+
+
+*/
