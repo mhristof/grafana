@@ -1881,8 +1881,7 @@ steps:
   - apk add --update jq
   - new_version=$(cat package.json | jq -r .version | sed s/pre/${DRONE_BUILD_NUMBER}/g)
   - 'echo "New version: $new_version"'
-  - yarn nx release version $new_version --no-git-commit --no-git-tag --no-stage-changes
-    --group fixed
+  - yarn nx release version $new_version --group grafanaPackages,privatePackages,plugins
   - yarn install --mode=update-lockfile
   depends_on:
   - yarn-install
@@ -4923,6 +4922,6 @@ kind: secret
 name: gcr_credentials
 ---
 kind: signature
-hmac: 16e83d097697c4bf93884e93bf127f02aab6a9c5a67fb429845c735663044d0e
+hmac: 9349b7c83ddd8eac06617f61719108757c875273b8b39c965ceb1e749165afca
 
 ...
