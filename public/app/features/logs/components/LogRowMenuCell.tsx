@@ -4,6 +4,7 @@ import { LogRowContextOptions, LogRowModel, getDefaultTimeRange, locationUtil, u
 import { DataQuery } from '@grafana/schema';
 import { ClipboardButton, IconButton } from '@grafana/ui';
 import { getConfig } from 'app/core/config';
+import { useContentOutlineContext } from 'app/features/explore/ContentOutline/ContentOutlineContext';
 
 import { LogRowStyles } from './getLogRowStyles';
 
@@ -87,6 +88,9 @@ export const LogRowMenuCell = React.memo(
       [onBlur]
     );
     const getLogText = useCallback(() => logText, [logText]);
+
+    const ctx = useContentOutlineContext();
+
     return (
       // We keep this click listener here to prevent the row from being selected when clicking on the menu.
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -153,8 +157,8 @@ export const LogRowMenuCell = React.memo(
             )}
             {onPermalinkClick && row.rowId !== undefined && row.uid && (
               <IconButton
-                tooltip="Copy shortlink"
-                aria-label="Copy shortlink"
+                tooltip="Copy shortlink xxx"
+                aria-label="Copy shortlink xxx"
                 tooltipPlacement="top"
                 size="md"
                 name="share-alt"
@@ -162,6 +166,17 @@ export const LogRowMenuCell = React.memo(
                 tabIndex={0}
               />
             )}
+            <IconButton
+              tooltip="Pin to content outline"
+              aria-label="Pin to content outline"
+              tooltipPlacement="top"
+              size="md"
+              name="gf-pin"
+              onClick={() =>
+                ctx?.register({ icon: 'gf-logs', title: 'Pinned log', panelId: 'Logs', level: 'child', ref: null })
+              }
+              tabIndex={0}
+            />
           </>
         )}
       </span>

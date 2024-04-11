@@ -154,6 +154,7 @@ export function ExploreGraph({
 
   useEffect(() => {
     if (onHiddenSeriesChanged) {
+      //console.log('dataWithConfig', dataWithConfig);
       const hiddenFrames: string[] = [];
       dataWithConfig.forEach((frame) => {
         const allFieldsHidden = frame.fields.map((field) => field.config?.custom?.hideFrom?.viz).every(identity);
@@ -161,6 +162,7 @@ export function ExploreGraph({
           hiddenFrames.push(getFrameDisplayName(frame));
         }
       });
+      //console.log('hiddenFrames', hiddenFrames);
       onHiddenSeriesChanged(hiddenFrames);
     }
   }, [dataWithConfig, onHiddenSeriesChanged]);

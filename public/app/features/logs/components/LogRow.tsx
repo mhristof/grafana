@@ -170,7 +170,10 @@ class UnThemedLogRow extends PureComponent<Props, State> {
   scrollToLogRow = (prevState: State, mounted = false) => {
     const { row, permalinkedRowId, scrollIntoView, containerRendered } = this.props;
 
+    //console.log({ permalinkedRowId, permalinked: this.state.permalinked });
+
     if (permalinkedRowId !== row.uid) {
+      //console.log('permalinkedRowId !== row.uid');
       // only set the new state if the row is not permalinked anymore or if the component was mounted.
       if (prevState.permalinked || mounted) {
         this.setState({ permalinked: false });
@@ -179,6 +182,7 @@ class UnThemedLogRow extends PureComponent<Props, State> {
     }
 
     if (!this.state.permalinked && containerRendered && this.logLineRef.current && scrollIntoView) {
+      // console.log('permalinkedRowId === row.uid');
       // at this point this row is the permalinked row, so we need to scroll to it and highlight it if possible.
       scrollIntoView(this.logLineRef.current);
       reportInteraction('grafana_explore_logs_permalink_opened', {
