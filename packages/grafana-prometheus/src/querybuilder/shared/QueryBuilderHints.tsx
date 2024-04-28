@@ -77,12 +77,11 @@ QueryBuilderHints.displayName = 'QueryBuilderHints';
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
-    container: css`
-      display: flex;
-      align-items: start;
-    `,
-    hint: css`
-      margin-right: ${theme.spacing(1)};
-    `,
+    container: css({
+      display: 'inlineGrid',
+    }),
+    hint: css({
+      marginRight: theme.spacing(1),
+    }),
   };
 };
