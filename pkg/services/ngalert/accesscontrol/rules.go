@@ -50,8 +50,8 @@ func (r *RuleService) getRulesReadEvaluator(rules ...*models.AlertRule) accessco
 		added[rule.NamespaceUID] = struct{}{}
 		evals = append(evals, getReadFolderAccessEvaluator(rule.NamespaceUID))
 	}
-	dsEvals := r.getRulesQueryEvaluator(rules...)
-	return accesscontrol.EvalAll(append(evals, dsEvals)...)
+	// dsEvals := r.getRulesQueryEvaluator(rules...)
+	return accesscontrol.EvalAll(evals...)
 }
 
 // getRulesQueryEvaluator constructs accesscontrol.Evaluator that checks all permissions to query data sources used by the provided rules
@@ -92,7 +92,6 @@ func (r *RuleService) AuthorizeDatasourceAccessForRule(ctx context.Context, user
 // AuthorizeAccessToRuleGroup checks that the identity.Requester has permissions to all rules, which means that it has permissions to:
 // - ("folders:read") read folders which contain the rules
 // - ("alert.rules:read") read alert rules in the folders
-// - ("datasources:query") query all data sources that rules refer to
 // Returns false if the requester does not have enough permissions, and error if something went wrong during the permission evaluation.
 func (r *RuleService) HasAccessToRuleGroup(ctx context.Context, user identity.Requester, rules models.RulesGroup) (bool, error) {
 	eval := r.getRulesReadEvaluator(rules...)
@@ -102,7 +101,6 @@ func (r *RuleService) HasAccessToRuleGroup(ctx context.Context, user identity.Re
 // AuthorizeAccessToRuleGroup checks that the identity.Requester has permissions to all rules, which means that it has permissions to:
 // - ("folders:read") read folders which contain the rules
 // - ("alert.rules:read") read alert rules in the folders
-// - ("datasources:query") query all data sources that rules refer to
 // Returns error if at least one permissions is missing or if something went wrong during the permission evaluation
 func (r *RuleService) AuthorizeAccessToRuleGroup(ctx context.Context, user identity.Requester, rules models.RulesGroup) error {
 	eval := r.getRulesReadEvaluator(rules...)
@@ -113,6 +111,21 @@ func (r *RuleService) AuthorizeAccessToRuleGroup(ctx context.Context, user ident
 			folderUID = rules[0].NamespaceUID
 		}
 		return fmt.Sprintf("access rule group '%s' in folder '%s'", groupName, folderUID)
+	})
+}
+
+// HasAccessToRuleQuery checks that the identity.Requester has permissions to query data sources used by the rule
+// This is used to authorize access to details related to the data source(s) used by the rule.
+// Returns false if the requester does not have enough permissions, and error if something went wrong during the permission evaluation.
+func (r *RuleService) HasAccessToRuleQuery(ctx context.Context, user identity.Requester, rule *models.AlertRule) (bool, error) {
+	return r.HasAccess(ctx, user, r.getRulesQueryEvaluator(rule))
+}
+
+// AuthorizeAccessToRuleQuery checks that the identity.Requester has permissions to query data sources used by the rule
+// Returns error if at least one permissions is missing or if something went wrong during the permission evaluation
+func (r *RuleService) AuthorizeAccessToRuleQuery(ctx context.Context, user identity.Requester, rule *models.AlertRule) error {
+	return r.HasAccessOrError(ctx, user, r.getRulesQueryEvaluator(rule), func() string {
+		return fmt.Sprintf("access details of the alert rule '%s'", rule.UID)
 	})
 }
 

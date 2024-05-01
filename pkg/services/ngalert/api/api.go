@@ -44,6 +44,8 @@ type RuleAccessControlService interface {
 	AuthorizeAccessToRuleGroup(ctx context.Context, user identity.Requester, rules models.RulesGroup) error
 	AuthorizeRuleChanges(ctx context.Context, user identity.Requester, change *store.GroupDelta) error
 	AuthorizeDatasourceAccessForRule(ctx context.Context, user identity.Requester, rule *models.AlertRule) error
+	HasAccessToRuleQuery(ctx context.Context, user identity.Requester, rule *models.AlertRule) (bool, error)
+	AuthorizeAccessToRuleQuery(ctx context.Context, user identity.Requester, rule *models.AlertRule) error
 }
 
 // API handlers.
