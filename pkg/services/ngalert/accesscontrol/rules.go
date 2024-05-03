@@ -77,6 +77,11 @@ func (r *RuleService) getRulesQueryEvaluator(rules ...*models.AlertRule) accessc
 	return accesscontrol.EvalAll(evals...)
 }
 
+func (r *RuleService) HasDatasourceAccessForRule(ctx context.Context, user identity.Requester, rule *models.AlertRule) (bool, error) {
+	ds := r.getRulesQueryEvaluator(rule)
+	return r.HasAccess(ctx, user, ds)
+}
+
 // AuthorizeDatasourceAccessForRule checks that user has access to all data sources declared by the rule
 func (r *RuleService) AuthorizeDatasourceAccessForRule(ctx context.Context, user identity.Requester, rule *models.AlertRule) error {
 	ds := r.getRulesQueryEvaluator(rule)
@@ -214,20 +219,6 @@ func (r *RuleService) AuthorizeRuleChanges(ctx context.Context, user identity.Re
 				return err
 			}
 			updateAuthorized = true
-		}
-
-		if rule.Existing.NamespaceUID != rule.New.NamespaceUID || rule.Existing.RuleGroup != rule.New.RuleGroup {
-			key := rule.Existing.GetGroupKey()
-			rules, existingGroup = change.AffectedGroups[key]
-			if !existingGroup {
-				// add a safeguard in the case of inconsistency. If user hit this then there is a bug in the calculating of changes struct
-				return fmt.Errorf("failed to authorize moving an alert rule %s between groups because unable to check access to group %s from which the rule is moved", rule.Existing.UID, rule.Existing.RuleGroup)
-			}
-			if err := r.HasAccessOrError(ctx, user, r.getRulesQueryEvaluator(rules...), func() string {
-				return fmt.Sprintf("move rule %s between two different groups because user does not have access to the source group %s", rule.Existing.UID, rule.Existing.RuleGroup)
-			}); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

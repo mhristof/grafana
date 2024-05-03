@@ -107,7 +107,7 @@ func (srv RulerSrv) getRuleWithFolderTitleByRuleUid(c *contextmodel.ReqContext, 
 	if err != nil {
 		return ngmodels.AlertRuleGroupWithFolderTitle{}, err
 	}
-	err = srv.authz.AuthorizeAccessToRuleQuery(c.Req.Context(), c.SignedInUser, &rule)
+	err = srv.authz.AuthorizeDatasourceAccessForRule(c.Req.Context(), c.SignedInUser, &rule)
 	if err != nil {
 		return ngmodels.AlertRuleGroupWithFolderTitle{}, err
 	}
@@ -132,7 +132,7 @@ func (srv RulerSrv) getRuleGroupWithFolderTitle(c *contextmodel.ReqContext, rule
 		return ngmodels.AlertRuleGroupWithFolderTitle{}, ngmodels.ErrAlertRuleNotFound
 	}
 	for _, rule := range rules {
-		err := srv.authz.AuthorizeAccessToRuleQuery(c.Req.Context(), c.SignedInUser, rule)
+		err := srv.authz.AuthorizeDatasourceAccessForRule(c.Req.Context(), c.SignedInUser, rule)
 		if err != nil {
 			return ngmodels.AlertRuleGroupWithFolderTitle{}, err
 		}
@@ -180,7 +180,7 @@ GROUP_LOOP:
 		}
 
 		for _, rule := range rulesGroup {
-			if queryAccess, err := srv.authz.HasAccessToRuleQuery(c.Req.Context(), c.SignedInUser, rule); err != nil {
+			if queryAccess, err := srv.authz.HasDatasourceAccessForRule(c.Req.Context(), c.SignedInUser, rule); err != nil {
 				return nil, err
 			} else if !queryAccess {
 				continue GROUP_LOOP // user does not have query access to all rules in the group

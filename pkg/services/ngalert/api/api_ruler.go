@@ -128,7 +128,13 @@ func (srv RulerSrv) RouteDeleteAlertRules(c *contextmodel.ReqContext, namespaceU
 			}
 			uid := make([]string, 0, len(rules))
 			for _, rule := range rules {
-				uid = append(uid, rule.UID)
+				canQuery, err := srv.authz.HasDatasourceAccessForRule(ctx, c.SignedInUser, rule)
+				if err != nil {
+					return err
+				}
+				if canQuery {
+					uid = append(uid, rule.UID)
+				}
 			}
 			rulesToDelete = append(rulesToDelete, uid...)
 		}
@@ -532,7 +538,7 @@ func (srv RulerSrv) toAuthorizedGettableExtendedRuleNode(
 		NotificationSettings: AlertRuleNotificationSettingsFromNotificationSettings(r.NotificationSettings),
 	}
 
-	hasQueryAccess, err := srv.authz.HasAccessToRuleQuery(ctx, user, &r)
+	hasQueryAccess, err := srv.authz.HasDatasourceAccessForRule(ctx, user, &r)
 	if err != nil {
 		return apimodels.GettableExtendedRuleNode{}, err
 	}
