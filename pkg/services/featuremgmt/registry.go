@@ -1240,6 +1240,12 @@ var (
 			Owner:        grafanaSharingSquad,
 			FrontendOnly: true,
 		},
+		{
+			Name:        "datasourceProxyDisableRBAC",
+			Description: "Disables applying a plugin route's ReqAction field to authorization",
+			Stage:       FeatureStageExperimental,
+			Owner:       identityAccessTeam,
+		},
 	}
 )
 
