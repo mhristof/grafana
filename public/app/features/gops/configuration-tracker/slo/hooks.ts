@@ -15,7 +15,7 @@ export function useSloChecks() {
   return Boolean(data?.slos?.length)
     ? {
         hasSloCreated: true,
-        hasSlosWithAlerting: data?.slos.some((slo) => Boolean(slo.alerting?.fastBurn)),
+        hasSloWithAlerting: data?.slos.some((slo) => Boolean(slo.alerting)),
       }
     : { hasSloCreated: false, hasSloWithAlerting: false };
 }
