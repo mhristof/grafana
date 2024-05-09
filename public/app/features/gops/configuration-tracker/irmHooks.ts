@@ -131,8 +131,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               urlLinkOnDone: {
                 url: '/a/grafana-slo-app/manage-slos',
               },
-              done: sloChecks.hasSloCreated,
             },
+            done: sloChecks.hasSloCreated,
           },
           {
             title: 'Enable SLO alerting',
@@ -149,8 +149,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/a/grafana-slo-app/manage-slos',
                 queryParams: { alertsEnabled: 'enabled' },
               },
-              done: sloChecks.hasSloWithAlerting,
             },
+            done: sloChecks.hasSloWithAlerting,
           },
         ],
       },
