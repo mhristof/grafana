@@ -13,7 +13,7 @@ import { isContactPointReady } from './alerting/utils';
 import { ConfigurationStepsEnum, DataSourceConfigurationData, IrmCardConfiguration } from './components/ConfigureIRM';
 import { useGetIncidentPluginConfig } from './incidents/hooks';
 import { useOnCallChatOpsConnections, useOnCallOptions } from './onCall/hooks';
-import { useSlosChecks } from './slo/hooks';
+import { useSloChecks } from './slo/hooks';
 
 interface UrlLink {
   url: string;
@@ -55,7 +55,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
   const incidentPluginConfig = useGetIncidentPluginConfig();
   const onCallOptions = useOnCallOptions();
   const chatOpsConnections = useOnCallChatOpsConnections();
-  const slosChecks = useSlosChecks();
+  const sloChecks = useSloChecks();
   function onIntegrationClick(integrationId: string, url: string) {
     const urlToGoWithIntegration = createUrl(url + integrationId, {
       returnTo: location.pathname + location.search,
@@ -131,7 +131,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               urlLinkOnDone: {
                 url: '/a/grafana-slo-app/manage-slos',
               },
-              done: slosChecks.hasSlos,
+              done: sloChecks.hasSloCreated,
             },
           },
           {
@@ -149,7 +149,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/a/grafana-slo-app/manage-slos',
                 queryParams: { alertsEnabled: 'enabled' },
               },
-              done: slosChecks.hasSlosWithAlerting,
+              done: sloChecks.hasSloWithAlerting,
             },
           },
         ],

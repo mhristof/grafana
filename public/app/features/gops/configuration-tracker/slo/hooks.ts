@@ -2,20 +2,20 @@ import { sloApi } from 'app/features/alerting/unified/api/sloApi';
 import { usePluginBridge } from 'app/features/alerting/unified/hooks/usePluginBridge';
 import { SupportedPlugin } from 'app/features/alerting/unified/types/pluginBridges';
 
-export function useSlosChecks() {
+export function useSloChecks() {
   const { installed: sloPluginInstalled } = usePluginBridge(SupportedPlugin.Slo);
 
-  const { data: sloChecks } = sloApi.endpoints.getSlos.useQuery(undefined, {
+  const { data } = sloApi.endpoints.getSlos.useQuery(undefined, {
     skip: !sloPluginInstalled,
     refetchOnFocus: true,
     refetchOnReconnect: true,
     refetchOnMountOrArgChange: true,
   });
 
-  return Boolean(sloChecks?.slos?.length)
+  return Boolean(data?.slos?.length)
     ? {
-        hasSlos: true,
-        hasSlosWithAlerting: sloChecks?.slos.some((slo) => Boolean(slo.alerting?.fastBurn)),
+        hasSloCreated: true,
+        hasSlosWithAlerting: data?.slos.some((slo) => Boolean(slo.alerting?.fastBurn)),
       }
-    : { hasSlos: false, hasSlosWithAlerting: false };
+    : { hasSloCreated: false, hasSloWithAlerting: false };
 }
