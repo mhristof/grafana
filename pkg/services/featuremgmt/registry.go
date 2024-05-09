@@ -1241,10 +1241,11 @@ var (
 			FrontendOnly: true,
 		},
 		{
-			Name:        "datasourceProxyDisableRBAC",
-			Description: "Disables applying a plugin route's ReqAction field to authorization",
-			Stage:       FeatureStageExperimental,
-			Owner:       identityAccessTeam,
+			Name:         "datasourceProxyDisableRBAC",
+			Description:  "Disables applying a plugin route's ReqAction field to authorization",
+			Stage:        FeatureStageGeneralAvailability,
+			Owner:        identityAccessTeam,
+			HideFromDocs: true,
 		},
 	}
 )
