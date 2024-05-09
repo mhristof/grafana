@@ -23,7 +23,6 @@ export interface StepButtonDto {
   type: 'openLink' | 'dropDown';
   label: string;
   labelOnDone?: string;
-  done?: boolean;
   urlLink?: UrlLink; // only for openLink
   urlLinkOnDone?: UrlLink; // only for openLink
   options?: Array<{ label: string; value: string }>; // only for dropDown
@@ -33,6 +32,7 @@ export interface SectionDtoStep {
   title: string;
   description: string;
   button: StepButtonDto;
+  done?: boolean;
 }
 export interface SectionDto {
   title: string;
@@ -83,8 +83,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               urlLinkOnDone: {
                 url: `/alerting/notifications`,
               },
-              done: isContactPointReady(defaultContactPoint, contactPoints),
             },
+            done: isContactPointReady(defaultContactPoint, contactPoints),
           },
           {
             title: 'Connect alerting to OnCall',
@@ -95,12 +95,12 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/alerting/notifications/receivers/new',
               },
               label: 'Connect',
-              done: isOnCallContactPointReady(contactPoints),
               urlLinkOnDone: {
                 url: '/alerting/notifications',
               },
               labelOnDone: 'View',
             },
+            done: isOnCallContactPointReady(contactPoints),
           },
           {
             title: 'Create alert rule',
@@ -115,8 +115,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/alerting/list',
               },
               labelOnDone: 'View',
-              done: useIsCreateAlertRuleDone(),
             },
+            done: useIsCreateAlertRuleDone(),
           },
           {
             title: 'Create your first SLO',
@@ -171,8 +171,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/a/grafana-incident-app',
               },
               labelOnDone: 'View',
-              done: incidentPluginConfig?.isInstalled,
             },
+            done: incidentPluginConfig?.isInstalled,
           },
           {
             title: 'Connect your Messaging workspace to OnCall',
@@ -189,8 +189,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 queryParams: { tab: 'ChatOps' },
               },
               labelOnDone: 'View',
-              done: chatOpsConnections.is_chatops_connected,
             },
+            done: chatOpsConnections.is_chatops_connected,
           },
           {
             title: 'Connect your Messaging workspace to Incident',
@@ -205,8 +205,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               urlLinkOnDone: {
                 url: '/a/grafana-incident-app/integrations',
               },
-              done: incidentPluginConfig?.isChatOpsInstalled,
             },
+            done: incidentPluginConfig?.isChatOpsInstalled,
           },
           {
             title: 'Add Messaging workspace channel to OnCall Integration',
@@ -221,8 +221,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/a/grafana-oncall-app/integrations/',
               },
               labelOnDone: 'View',
-              done: chatOpsConnections.is_integration_chatops_connected,
             },
+            done: chatOpsConnections.is_integration_chatops_connected,
           },
         ],
       },
@@ -258,11 +258,8 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
   };
   const { stepsDone, totalStepsToDo } = essentialContent.sections.reduce(
     (acc, section) => {
-      const stepsDone = section.steps.filter((step) => step.button.done).length;
-      const totalStepsToForSection = section.steps.reduce(
-        (acc, step) => (step.button.done !== undefined ? acc + 1 : acc),
-        0
-      );
+      const stepsDone = section.steps.filter((step) => step.done).length;
+      const totalStepsToForSection = section.steps.reduce((acc, step) => (step.done !== undefined ? acc + 1 : acc), 0);
       return {
         stepsDone: acc.stepsDone + stepsDone,
         totalStepsToDo: acc.totalStepsToDo + totalStepsToForSection,
