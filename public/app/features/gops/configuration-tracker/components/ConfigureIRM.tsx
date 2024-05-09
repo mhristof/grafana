@@ -4,16 +4,11 @@ import { useHistory } from 'react-router-dom';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import { IconName, Text, useStyles2 } from '@grafana/ui';
-import { AlertmanagerProvider } from 'app/features/alerting/unified/state/AlertmanagerContext';
-import {
-  GRAFANA_RULES_SOURCE_NAME,
-  getFirstCompatibleDataSource,
-} from 'app/features/alerting/unified/utils/datasource';
+import { getFirstCompatibleDataSource } from 'app/features/alerting/unified/utils/datasource';
 import { DATASOURCES_ROUTES } from 'app/features/datasources/constants';
 
 import { IRMInteractionNames, trackIrmConfigurationTrackerEvent } from '../Analytics';
-import { useGetEssentialsConfiguration } from '../hooks/irmHooks';
-import { useGetConfigurationForUI } from '../hooks/useGetConfiguration';
+import { useGetConfigurationForUI, useGetEssentialsConfiguration } from '../irmHooks';
 
 import { ConfigCard } from './ConfigCard';
 import { Essentials } from './Essentials';
@@ -103,14 +98,12 @@ export function ConfigureIRM() {
           <ConfigCard key={config.id} config={config} handleActionClick={handleActionClick} />
         ))}
         {essentialsOpen && (
-          <AlertmanagerProvider accessType={'notification'} alertmanagerSourceName={GRAFANA_RULES_SOURCE_NAME}>
-            <Essentials
-              onClose={onCloseEssentials}
-              essentialsConfig={essentialsConfigurationData.essentialContent}
-              stepsDone={essentialsConfigurationData.stepsDone}
-              totalStepsToDo={essentialsConfigurationData.totalStepsToDo}
-            />
-          </AlertmanagerProvider>
+          <Essentials
+            onClose={onCloseEssentials}
+            essentialsConfig={essentialsConfigurationData.essentialContent}
+            stepsDone={essentialsConfigurationData.stepsDone}
+            totalStepsToDo={essentialsConfigurationData.totalStepsToDo}
+          />
         )}
       </section>
       <Text element="h4" variant="h4">
