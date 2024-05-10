@@ -70,7 +70,7 @@ function useGetConfigurationForApps() {
     isLoading: isOnCallConfigLoading,
   } = useOnCallChatOpsConnections();
   // configuration checks for SLO
-  const { hasSloCreated, hasSloWithAlerting } = useSloChecks();
+  const { isLoading: isSloConfigLoading, hasSloCreated, hasSloWithAlerting } = useSloChecks();
 
   // check if any of the configurations are loading
   const isLoading =
@@ -78,7 +78,8 @@ function useGetConfigurationForApps() {
     isLoadingDefaultContactPoint ||
     isLoadingAlertCreatedDone ||
     isIncidentsConfigLoading ||
-    isOnCallConfigLoading;
+    isOnCallConfigLoading ||
+    isSloConfigLoading;
 
   return {
     alerting: {

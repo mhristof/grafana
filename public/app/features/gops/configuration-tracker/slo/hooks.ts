@@ -5,7 +5,7 @@ import { SupportedPlugin } from 'app/features/alerting/unified/types/pluginBridg
 export function useSloChecks() {
   const { installed: sloPluginInstalled } = usePluginBridge(SupportedPlugin.Slo);
 
-  const { data } = sloApi.endpoints.getSlos.useQuery(undefined, {
+  const { data, isLoading } = sloApi.endpoints.getSlos.useQuery(undefined, {
     skip: !sloPluginInstalled,
     refetchOnFocus: true,
     refetchOnReconnect: true,
@@ -14,8 +14,9 @@ export function useSloChecks() {
 
   return Boolean(data?.slos?.length)
     ? {
+        isLoading,
         hasSloCreated: true,
         hasSloWithAlerting: data?.slos.some((slo) => Boolean(slo.alerting)),
       }
-    : { hasSloCreated: false, hasSloWithAlerting: false };
+    : { isLoading, hasSloCreated: false, hasSloWithAlerting: false };
 }
