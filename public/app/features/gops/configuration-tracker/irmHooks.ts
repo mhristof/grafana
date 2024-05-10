@@ -27,6 +27,7 @@ export interface StepButtonDto {
   urlLinkOnDone?: UrlLink; // only for openLink
   options?: Array<{ label: string; value: string }>; // only for dropDown
   onClickOption?: (value: string) => void; // only for dropDown
+  stepNotAvailableText?: string;
 }
 export interface SectionDtoStep {
   title: string;
@@ -47,15 +48,70 @@ export interface EssentialsConfigurationData {
   essentialContent: SectionsDto;
   stepsDone: number;
   totalStepsToDo: number;
+  isLoading: boolean;
+}
+
+function useGetConfigurationForApps() {
+  // configuration checks for alerting
+  const { contactPoints, isLoading: isLoadingContactPoints } = useGetContactPoints();
+  const { defaultContactpoint, isLoading: isLoadingDefaultContactPoint } = useGetDefaultContactPoint();
+  const { isDone: isCreateAlertRuleDone, isLoading: isLoadingAlertCreatedDone } = useIsCreateAlertRuleDone();
+  // configuration checks for incidents
+  const {
+    isChatOpsInstalled,
+    isInstalled: isIncidentsInstalled,
+    isLoading: isIncidentsConfigLoading,
+  } = useGetIncidentPluginConfig();
+  // configuration checks for oncall
+  const onCallOptions = useOnCallOptions();
+  const {
+    is_chatops_connected,
+    is_integration_chatops_connected,
+    isLoading: isOnCallConfigLoading,
+  } = useOnCallChatOpsConnections();
+  // configuration checks for SLO
+  const { hasSloCreated, hasSloWithAlerting } = useSloChecks();
+
+  // check if any of the configurations are loading
+  const isLoading =
+    isLoadingContactPoints ||
+    isLoadingDefaultContactPoint ||
+    isLoadingAlertCreatedDone ||
+    isIncidentsConfigLoading ||
+    isOnCallConfigLoading;
+
+  return {
+    alerting: {
+      contactPoints,
+      defaultContactpoint,
+      isCreateAlertRuleDone,
+    },
+    incidents: {
+      isChatOpsInstalled,
+      isIncidentsInstalled,
+    },
+    onCall: {
+      onCallOptions,
+      is_chatops_connected,
+      is_integration_chatops_connected,
+    },
+    slo: {
+      hasSloCreated,
+      hasSloWithAlerting,
+    },
+    isLoading,
+  };
 }
 
 export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
-  const contactPoints = useGetContactPoints();
-  const defaultContactPoint = useGetDefaultContactPoint();
-  const incidentPluginConfig = useGetIncidentPluginConfig();
-  const onCallOptions = useOnCallOptions();
-  const chatOpsConnections = useOnCallChatOpsConnections();
-  const sloChecks = useSloChecks();
+  const {
+    alerting: { contactPoints, defaultContactpoint, isCreateAlertRuleDone },
+    incidents: { isChatOpsInstalled, isIncidentsInstalled },
+    onCall: { onCallOptions, is_chatops_connected, is_integration_chatops_connected },
+    slo: { hasSloCreated, hasSloWithAlerting },
+    isLoading,
+  } = useGetConfigurationForApps();
+
   function onIntegrationClick(integrationId: string, url: string) {
     const urlToGoWithIntegration = createUrl(url + integrationId, {
       returnTo: location.pathname + location.search,
@@ -75,7 +131,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
             button: {
               type: 'openLink',
               urlLink: {
-                url: `/alerting/notifications/receivers/${defaultContactPoint}/edit`,
+                url: `/alerting/notifications/receivers/${defaultContactpoint}/edit`,
                 queryParams: { alertmanager: 'grafana' },
               },
               label: 'Edit',
@@ -84,11 +140,11 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: `/alerting/notifications`,
               },
             },
-            done: isContactPointReady(defaultContactPoint, contactPoints),
+            done: isContactPointReady(defaultContactpoint, contactPoints),
           },
           {
             title: 'Connect alerting to OnCall',
-            description: 'OnCall allows precisely manage your on-call strategy and use multiple channels to deliver',
+            description: 'Create an OnCall integration for an alerting contact point.',
             button: {
               type: 'openLink',
               urlLink: {
@@ -116,7 +172,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               },
               labelOnDone: 'View',
             },
-            done: useIsCreateAlertRuleDone(),
+            done: isCreateAlertRuleDone,
           },
           {
             title: 'Create your first SLO',
@@ -132,7 +188,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/a/grafana-slo-app/manage-slos',
               },
             },
-            done: sloChecks.hasSloCreated,
+            done: hasSloCreated,
           },
           {
             title: 'Enable SLO alerting',
@@ -150,7 +206,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 queryParams: { alertsEnabled: 'enabled' },
               },
             },
-            done: sloChecks.hasSloWithAlerting,
+            done: hasSloWithAlerting,
           },
         ],
       },
@@ -172,7 +228,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               },
               labelOnDone: 'View',
             },
-            done: incidentPluginConfig?.isInstalled,
+            done: isIncidentsInstalled,
           },
           {
             title: 'Connect your Messaging workspace to OnCall',
@@ -190,7 +246,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               },
               labelOnDone: 'View',
             },
-            done: chatOpsConnections.is_chatops_connected,
+            done: is_chatops_connected,
           },
           {
             title: 'Connect your Messaging workspace to Incident',
@@ -206,7 +262,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
                 url: '/a/grafana-incident-app/integrations',
               },
             },
-            done: incidentPluginConfig?.isChatOpsInstalled,
+            done: isChatOpsInstalled,
           },
           {
             title: 'Add Messaging workspace channel to OnCall Integration',
@@ -222,7 +278,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               },
               labelOnDone: 'View',
             },
-            done: chatOpsConnections.is_integration_chatops_connected,
+            done: is_integration_chatops_connected,
           },
         ],
       },
@@ -238,6 +294,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
               label: 'Select integration',
               options: onCallOptions,
               onClickOption: (value) => onIntegrationClick(value, '/a/grafana-oncall-app/integrations/'),
+              stepNotAvailableText: 'No integrations available',
             },
           },
           {
@@ -267,7 +324,7 @@ export function useGetEssentialsConfiguration(): EssentialsConfigurationData {
     },
     { stepsDone: 0, totalStepsToDo: 0 }
   );
-  return { essentialContent, stepsDone, totalStepsToDo };
+  return { essentialContent, stepsDone, totalStepsToDo, isLoading };
 }
 interface UseConfigurationProps {
   dataSourceConfigurationData: DataSourceConfigurationData;
