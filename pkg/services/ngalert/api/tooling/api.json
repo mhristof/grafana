@@ -970,9 +970,7 @@
    },
    "type": "object"
   },
-  "EvalQueriesResponse": {
-   "type": "object"
-  },
+  "EvalQueriesResponse": {},
   "ExplorePanelsState": {
    "description": "This is an object constructed with the keys as the values of the enum VisType and the value being a bag of properties"
   },
@@ -4440,7 +4438,6 @@
    "type": "object"
   },
   "alertGroup": {
-   "description": "AlertGroup alert group",
    "properties": {
     "alerts": {
      "description": "alerts",
@@ -4466,8 +4463,7 @@
   "alertGroups": {
    "description": "AlertGroups alert groups",
    "items": {
-    "$ref": "#/definitions/alertGroup",
-    "type": "object"
+    "$ref": "#/definitions/alertGroup"
    },
    "type": "array"
   },
@@ -4570,6 +4566,48 @@
    "type": "object"
   },
   "gettableAlert": {
+   "properties": {
+    "annotations": {
+     "$ref": "#/definitions/labelSet"
+    },
+    "endsAt": {
+     "description": "ends at",
+     "format": "date-time",
+     "type": "string"
+    },
+    "fingerprint": {
+     "description": "fingerprint",
+     "type": "string"
+    },
+    "generatorURL": {
+     "description": "generator URL\nFormat: uri",
+     "format": "uri",
+     "type": "string"
+    },
+    "labels": {
+     "$ref": "#/definitions/labelSet"
+    },
+    "receivers": {
+     "description": "receivers",
+     "items": {
+      "$ref": "#/definitions/receiver"
+     },
+     "type": "array"
+    },
+    "startsAt": {
+     "description": "starts at",
+     "format": "date-time",
+     "type": "string"
+    },
+    "status": {
+     "$ref": "#/definitions/alertStatus"
+    },
+    "updatedAt": {
+     "description": "updated at",
+     "format": "date-time",
+     "type": "string"
+    }
+   },
    "required": [
     "labels",
     "annotations",
@@ -4585,8 +4623,7 @@
   "gettableAlerts": {
    "description": "GettableAlerts gettable alerts",
    "items": {
-    "$ref": "#/definitions/gettableAlert",
-    "type": "object"
+    "$ref": "#/definitions/gettableAlert"
    },
    "type": "array"
   },
@@ -4640,14 +4677,13 @@
    "type": "object"
   },
   "gettableSilences": {
+   "description": "GettableSilences gettable silences",
    "items": {
-    "$ref": "#/definitions/gettableSilence",
-    "type": "object"
+    "$ref": "#/definitions/gettableSilence"
    },
    "type": "array"
   },
   "integration": {
-   "description": "Integration integration",
    "properties": {
     "lastNotifyAttempt": {
      "description": "A timestamp indicating the last attempt to deliver a notification regardless of the outcome.\nFormat: date-time",
@@ -4791,6 +4827,33 @@
    "type": "array"
   },
   "postableSilence": {
+   "properties": {
+    "comment": {
+     "description": "comment",
+     "type": "string"
+    },
+    "createdBy": {
+     "description": "created by",
+     "type": "string"
+    },
+    "endsAt": {
+     "description": "ends at",
+     "format": "date-time",
+     "type": "string"
+    },
+    "id": {
+     "description": "id",
+     "type": "string"
+    },
+    "matchers": {
+     "$ref": "#/definitions/matchers"
+    },
+    "startsAt": {
+     "description": "starts at",
+     "format": "date-time",
+     "type": "string"
+    }
+   },
    "required": [
     "comment",
     "createdBy",
