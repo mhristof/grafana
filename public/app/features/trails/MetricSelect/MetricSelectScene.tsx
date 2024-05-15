@@ -22,17 +22,11 @@ import {
 } from '@grafana/scenes';
 import { Input, InlineSwitch, Field, Alert, Icon, useStyles2 } from '@grafana/ui';
 
-import { DataTrailHistory } from './DataTrailsHistory';
-import { MetricScene } from './MetricScene';
-import { MetricSearchTermsVariable } from './MetricSelect/MetricSearchTermsVariable';
-import { SelectMetricAction } from './MetricSelect/SelectMetricAction';
-import { getMetricNames } from './MetricSelect/api';
-import { getPreviewPanelFor } from './MetricSelect/previewPanel';
-import { sortRelatedMetrics } from './MetricSelect/relatedMetrics';
-import { createJSRegExpFromSearchTerms, deriveSearchTermsFromInput, getMetricSearchTerms } from './MetricSelect/util';
-import { StatusWrapper } from './StatusWrapper';
-import { getMetricDescription } from './helpers/MetricDatasourceHelper';
-import { reportExploreMetrics } from './interactions';
+import { DataTrailHistory } from '../DataTrailsHistory';
+import { MetricScene } from '../MetricScene';
+import { StatusWrapper } from '../StatusWrapper';
+import { getMetricDescription } from '../helpers/MetricDatasourceHelper';
+import { reportExploreMetrics } from '../interactions';
 import {
   getVariablesWithMetricConstant,
   MetricSelectedEvent,
@@ -40,8 +34,15 @@ import {
   VAR_DATASOURCE_EXPR,
   VAR_FILTERS,
   VAR_METRIC_SEARCH_TERMS,
-} from './shared';
-import { getFilters, getTrailFor, isSceneTimeRangeState } from './utils';
+} from '../shared';
+import { getFilters, getTrailFor, isSceneTimeRangeState } from '../utils';
+
+import { MetricSearchTermsVariable } from './MetricSearchTermsVariable';
+import { SelectMetricAction } from './SelectMetricAction';
+import { getMetricNames } from './api';
+import { getPreviewPanelFor } from './previewPanel';
+import { sortRelatedMetrics } from './relatedMetrics';
+import { createJSRegExpFromSearchTerms, deriveSearchTermsFromInput, getMetricSearchTerms } from './util';
 
 interface MetricPanel {
   name: string;
